@@ -164,7 +164,7 @@ http://localhost:3000
 
 ## 📸 Preview
 
-*screenshot*
+<img width="1620" height="1398" alt="image" src="https://github.com/user-attachments/assets/baa4ea45-963d-4ebe-8e73-76a28d1bc61c" />
 
 ---
 
