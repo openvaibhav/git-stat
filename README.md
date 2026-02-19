@@ -164,7 +164,7 @@ http://localhost:3000
 
 ## 📸 Preview
 
-*(Add screenshots here)*
+*screenshot*
 
 ---
 
