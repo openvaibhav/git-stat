@@ -149,8 +149,6 @@ export default function App() {
         company: userRes.data.company,
         blog: userRes.data.blog,
         created: new Date(userRes.data.created_at).toLocaleDateString(),
-
-        /* CONTRIBUTIONS MERGED */
         totalContributions: contrib.total,
         currentStreak: contrib.currentStreak,
         longestStreak: contrib.longestStreak,
@@ -235,8 +233,6 @@ export default function App() {
           <div className="statsGrid">
             <Stat label="Stars" value={stats.stars} />
             <Stat label="Forks" value={stats.forks} />
-
-            {/* NEW */}
             <Stat
               label="Total Contributions"
               value={stats.totalContributions}
