@@ -186,7 +186,7 @@ export default function App() {
       <div className="searchBox">
         <input
           type="text"
-          placeholder="Enter GitHub Profile Link..."
+          placeholder="Enter GitHub Profile Link or Username..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
