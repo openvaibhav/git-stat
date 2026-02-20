@@ -260,3 +260,44 @@ body {
 .react-github-calendar svg {
   margin: auto;
 }
+
+/* GFIS header layout */
+.gfisHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+/* Back button positioned left */
+.backBtn {
+  position: absolute;
+  left: 0;
+
+  background: transparent;
+  border: 2px solid #22c55e;
+  color: #22c55e;
+
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.backBtn:hover {
+  background: #22c55e;
+  color: black;
+}
+
+.issueTitle a {
+  color: #22c55e;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.issueTitle a:hover {
+  text-decoration: underline;
+  color: #4ade80;
+}
