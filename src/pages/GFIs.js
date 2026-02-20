@@ -62,10 +62,10 @@ export default function GFIS() {
       </div>
 
       {/* REPO HEADER */}
-      <h2>{repoInfo.full_name}</h2>
       {repoInfo && (
-      <div className="profileCard sideProfile">
+        <div className="profileCard sideProfile">
           <div className="profileInfo">
+            <h2>{repoInfo.full_name}</h2>
             <p>{repoInfo.description}</p>
             <div className="profileMeta">
               ⭐ {repoInfo.stargazers_count}
@@ -77,9 +77,9 @@ export default function GFIS() {
       )}
 
       {/* ISSUES LIST */}
-      <h3>Recent Issues</h3>
       {issues.length > 0 && (
         <div className="card issueList">
+          <h3>Recent Issues</h3>
 
           {issues.map((issue) => (
             <div key={issue.id} className="repoItem">
