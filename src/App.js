@@ -20,11 +20,6 @@ export default function App() {
   const [languages, setLanguages] = useState({});
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
-  const [contribStats, setContribStats] = useState({
-    total: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-  });
 
   const extractUsername = (url) => {
     try {
