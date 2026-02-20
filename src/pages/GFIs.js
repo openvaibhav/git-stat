@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../App.css";
+import { useNavigate } from "react-router-dom";
 
 export default function GFIS() {
   const [input, setInput] = useState("");
@@ -20,6 +21,8 @@ export default function GFIS() {
     }
   };
 
+  const navigate = useNavigate();
+
   const fetchIssues = async () => {
     const parsed = extractRepo(input);
     if (!parsed) return alert("Invalid repo link");
@@ -28,11 +31,11 @@ export default function GFIS() {
 
     try {
       const repoRes = await axios.get(
-        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}`
+        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}`,
       );
 
       const issuesRes = await axios.get(
-        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/issues?state=all&per_page=20`
+        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/issues?state=all&per_page=20`,
       );
 
       setRepoInfo(repoRes.data);
@@ -46,7 +49,13 @@ export default function GFIS() {
 
   return (
     <div className="app">
-      <h1 className="title">GitHub Issues Tracker</h1>
+      <div className="gfisHeader">
+        <button className="backBtn" onClick={() => navigate(-1)}>
+          ⬅ Back
+        </button>
+
+        <h1 className="title">GitHub Issues Tracker</h1>
+      </div>
 
       {/* SEARCH BAR */}
       <div className="searchBox">
@@ -63,14 +72,16 @@ export default function GFIS() {
 
       {/* REPO HEADER */}
       {repoInfo && (
-        <div className="profileCard sideProfile">
-          <div className="profileInfo">
-            <h2>{repoInfo.full_name}</h2>
-            <p>{repoInfo.description}</p>
-            <div className="profileMeta">
-              ⭐ {repoInfo.stargazers_count}
-              🍴 {repoInfo.forks_count}
-              🐛 {repoInfo.open_issues_count}
+        <div>
+          <h2>{repoInfo.full_name}</h2>
+          <div className="profileCard sideProfile">
+            <div className="profileInfo">
+              <p>{repoInfo.description}</p>
+              <div className="profileMeta">
+                ⭐ {repoInfo.stargazers_count}
+                🍴 {repoInfo.forks_count}
+                🐛 {repoInfo.open_issues_count}
+              </div>
             </div>
           </div>
         </div>
@@ -78,45 +89,52 @@ export default function GFIS() {
 
       {/* ISSUES LIST */}
       {issues.length > 0 && (
-        <div className="card issueList">
+        <div>
           <h3>Recent Issues</h3>
-
-          {issues.map((issue) => (
-            <div key={issue.id} className="repoItem">
-              <div>
-                <h4>
-                  #{issue.number} {issue.title}
-                </h4>
-                <p>
-                  👤 {issue.user.login} | 💬 {issue.comments} comments
-                </p>
-
-                {/* Labels */}
-                <div style={{ marginTop: "5px" }}>
-                  {issue.labels.map((label) => (
-                    <span
-                      key={label.id}
-                      style={{
-                        background: `#${label.color}`,
-                        padding: "3px 8px",
-                        borderRadius: "6px",
-                        marginRight: "5px",
-                        fontSize: "12px",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
+          <div className="card issueList">
+            {issues.map((issue) => (
+              <div key={issue.id} className="repoItem">
+                <div>
+                  <h4 className="issueTitle">
+                    <a
+                      href={issue.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      {label.name}
-                    </span>
-                  ))}
+                      #{issue.number} {issue.title}
+                    </a>
+                  </h4>
+                  <p>
+                    👤 {issue.user.login} | 💬 {issue.comments} comments
+                  </p>
+
+                  {/* Labels */}
+                  <div style={{ marginTop: "5px" }}>
+                    {issue.labels.map((label) => (
+                      <span
+                        key={label.id}
+                        style={{
+                          background: `#${label.color}`,
+                          padding: "3px 8px",
+                          borderRadius: "6px",
+                          marginRight: "5px",
+                          fontSize: "12px",
+                          color: "#000",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {label.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="repoStats">
+                  {issue.state === "open" ? "🟢 OPEN" : "🔴 CLOSED"}
                 </div>
               </div>
-
-              <div className="repoStats">
-                {issue.state === "open" ? "🟢 OPEN" : "🔴 CLOSED"}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
