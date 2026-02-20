@@ -6,6 +6,11 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 import { GitHubCalendar } from "react-github-calendar";
 
+import { Routes, Route } from "react-router-dom";
+import GFI from "./pages/GFIs";
+
+import { useNavigate } from "react-router-dom";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function App() {
@@ -160,6 +165,8 @@ export default function App() {
     setLoading(false);
   };
 
+  const navigate = useNavigate();
+
   /* Pie chart data */
   const pieData = {
     labels: Object.keys(languages),
@@ -178,125 +185,155 @@ export default function App() {
     ],
   };
 
-  return (
-    <div className="app">
-      <h1 className="title">GIT-Stat</h1>
-
-      {/* INPUT */}
-      <div className="searchBox">
-        <input
-          type="text"
-          placeholder="Enter GitHub Profile Link or Username..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <button onClick={fetchStats}>{loading ? "Loading..." : "Track"}</button>
+  function Stat({ label, value }) {
+    return (
+      <div className="statCard">
+        <p>{label}</p>
+        <h3>{value}</h3>
       </div>
+    );
+  }
 
-      {/* PROFILE */}
-      {stats && (
-        <>
-          <div className="profileCard sideProfile">
-            {/* LEFT — PFP */}
-            <div className="pfpSection">
-              <img src={stats.avatar} alt="avatar" />
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyToClipboard = async (url, id) => {
+    await navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <div className="app">
+            <h1 className="title">GIT-Stat</h1>
+
+            {/* INPUT */}
+            <div className="searchBox">
+              <input
+                type="text"
+                placeholder="Enter GitHub Profile Link or Username..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+              />
+              <button onClick={fetchStats}>
+                {loading ? "Loading..." : "Track"}
+              </button>
+              <button onClick={() => navigate("/gfis")}>GFI Tracker</button>
             </div>
 
-            {/* RIGHT — DETAILS */}
-            <div className="profileInfo">
-              <h2>{stats.name}</h2>
-              <p className="username">@{username}</p>
-
-              <div className="profileMeta">
-                <span>👥 {stats.followers || "0"} Followers</span>
-                <span>🔁 {stats.following || "0"} Following</span>
-                <span>📦 {stats.repos} Repos</span>
-              </div>
-
-              <div className="profileExtra">
-                {stats.location && <p>📍 {stats.location}</p>}
-                {stats.company && <p>🏢 {stats.company}</p>}
-                {stats.blog && (
-                  <p>
-                    🔗{" "}
-                    <a href={stats.blog} target="_blank" rel="noreferrer">
-                      {stats.blog}
-                    </a>
-                  </p>
-                )}
-                <p>📅 Joined {stats.created}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* STAT CARDS */}
-          <div className="statsGrid">
-            <Stat label="Stars" value={stats.stars} />
-            <Stat label="Forks" value={stats.forks} />
-            <Stat
-              label="Total Contributions"
-              value={stats.totalContributions}
-            />
-            <Stat label="Current Streak" value={stats.currentStreak} />
-            <Stat label="Highest Streak" value={stats.longestStreak} />
-          </div>
-
-          {/* PIE + REPO LIST */}
-          <div className="bottomGrid">
-            {/* PIE CHART */}
-            <div className="card">
-              <h3>Language Rank Distribution</h3>
-              <div className="pieWrapper">
-                <Pie data={pieData} />
-              </div>
-            </div>
-
-            {/* REPO LIST */}
-            <div className="card repoList">
-              <h3>Repository Tracker</h3>
-
-              {repos.slice(0, 20).map((repo) => (
-                <div key={repo.id} className="repoItem">
-                  <div>
-                    <h4>
-                      {repo.name} // {repo.language || "Unknown"}
-                    </h4>
+            {/* PROFILE */}
+            {stats && (
+              <>
+                <div className="profileCard sideProfile">
+                  {/* LEFT — PFP */}
+                  <div className="pfpSection">
+                    <img src={stats.avatar} alt="avatar" />
                   </div>
 
-                  <div className="repoStats">
-                    ⭐ {repo.stargazers_count}
-                    🍴 {repo.forks_count}
+                  {/* RIGHT — DETAILS */}
+                  <div className="profileInfo">
+                    <h2>{stats.name}</h2>
+                    <p className="username">@{username}</p>
+
+                    <div className="profileMeta">
+                      <span>👥 {stats.followers || "0"} Followers</span>
+                      <span>🔁 {stats.following || "0"} Following</span>
+                      <span>📦 {stats.repos} Repos</span>
+                    </div>
+
+                    <div className="profileExtra">
+                      {stats.location && <p>📍 {stats.location}</p>}
+                      {stats.company && <p>🏢 {stats.company}</p>}
+                      {stats.blog && (
+                        <p>
+                          🔗{" "}
+                          <a href={stats.blog} target="_blank" rel="noreferrer">
+                            {stats.blog}
+                          </a>
+                        </p>
+                      )}
+                      <p>📅 Joined {stats.created}</p>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* STAT CARDS */}
+                <div className="statsGrid">
+                  <Stat label="Stars" value={stats.stars} />
+                  <Stat label="Forks" value={stats.forks} />
+                  <Stat
+                    label="Total Contributions"
+                    value={stats.totalContributions}
+                  />
+                  <Stat label="Current Streak" value={stats.currentStreak} />
+                  <Stat label="Highest Streak" value={stats.longestStreak} />
+                </div>
+
+                {/* PIE + REPO LIST */}
+                <div className="bottomGrid">
+                  {/* PIE CHART */}
+                  <div className="card">
+                    <h3>Language Rank Distribution</h3>
+                    <div className="pieWrapper">
+                      <Pie data={pieData} />
+                    </div>
+                  </div>
+
+                  {/* REPO LIST */}
+                  <div className="card repoList">
+                    <h3>Repository Tracker</h3>
+
+                    {repos.slice(0, 20).map((repo) => (
+                      <div key={repo.id} className="repoItem">
+                        <div className="repoLeft">
+                          {/* COPY BUTTON */}
+                          <button
+                            className="copyBtn"
+                            onClick={() =>
+                              copyToClipboard(repo.html_url, repo.id)
+                            }
+                          >
+                            {copiedId === repo.id ? "✔" : "📋"}
+                          </button>
+
+                          <h4>
+                            {repo.name} : {repo.language || "Unknown"}
+                          </h4>
+                        </div>
+
+                        <div className="repoStats">
+                          ⭐ {repo.stargazers_count}
+                          🍴 {repo.forks_count}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* HEATMAP FOOTER */}
+                {username && (
+                  <div className="card heatmapFooter">
+                    <h3>Contribution Activity</h3>
+
+                    <GitHubCalendar
+                      username={username}
+                      blockSize={15}
+                      blockMargin={5}
+                      color="#22c55e"
+                      fontSize={14}
+                    />
+                  </div>
+                )}
+              </>
+            )}
           </div>
+        }
+      />
 
-          {/* HEATMAP FOOTER */}
-          {username && (
-            <div className="card heatmapFooter">
-              <h3>Contribution Activity</h3>
-
-              <GitHubCalendar
-                username={username}
-                blockSize={15}
-                blockMargin={5}
-                color="#22c55e"
-                fontSize={14}
-              />
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div className="statCard">
-      <p>{label}</p>
-      <h3>{value}</h3>
-    </div>
+      <Route path="/gfis" element={<GFI />} />
+    </Routes>
   );
 }
