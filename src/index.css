@@ -120,6 +120,30 @@ body {
   text-decoration: none;
 }
 
+/* Repo List */
+
+.repoLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.copyBtn {
+  background: transparent;
+  border: 1px solid #22c55e;
+  color: #22c55e;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.copyBtn:hover {
+  background: #22c55e;
+  color: black;
+}
+
 
 /* Stats grid */
 
@@ -161,6 +185,11 @@ body {
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
 }
 
+.issueList {
+  max-height: 800px;
+  overflow-y: auto;
+}
+
 /* Repo list */
 
 .repoList {
@@ -171,6 +200,7 @@ body {
 .repoItem {
   display: flex;
   justify-content: space-between;
+  text-align: left;
   padding: 10px;
   margin-top: 10px;
   background: #0f172a;
