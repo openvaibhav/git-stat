@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../App.css";
 import { useNavigate } from "react-router-dom";
 
 export default function GFIS() {
   const [input, setInput] = useState("");
-  const [issues, setIssues] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [repoInfo, setRepoInfo] = useState(null);
+  const [issues, setIssues] = useState([]);
+  const [labels, setLabels] = useState([]);
+
+  const [stateFilter, setStateFilter] = useState("all");
+  const [selectedLabel, setSelectedLabel] = useState("all");
+  const [page, setPage] = useState(1);
+
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const extractRepo = (url) => {
     try {
@@ -21,9 +29,7 @@ export default function GFIS() {
     }
   };
 
-  const navigate = useNavigate();
-
-  const fetchIssues = async () => {
+  const fetchRepoData = async () => {
     const parsed = extractRepo(input);
     if (!parsed) return alert("Invalid repo link");
 
@@ -34,18 +40,59 @@ export default function GFIS() {
         `https://api.github.com/repos/${parsed.owner}/${parsed.repo}`,
       );
 
-      const issuesRes = await axios.get(
-        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/issues?state=all&per_page=20`,
+      const labelsRes = await axios.get(
+        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/labels`,
+        {
+          params: {
+            per_page: 100,
+            page: 1,
+          },
+        },
       );
 
       setRepoInfo(repoRes.data);
-      setIssues(issuesRes.data);
+      setLabels(labelsRes.data);
+
+      setPage(1);
     } catch (err) {
       alert("Repo not found or API error");
     }
 
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!repoInfo) return;
+
+    const parsed = extractRepo(input);
+    if (!parsed) return;
+
+    const fetchFilteredIssues = async () => {
+      setLoading(true);
+
+      try {
+        const issuesRes = await axios.get(
+          `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/issues`,
+          {
+            params: {
+              state: stateFilter,
+              per_page: 10,
+              page: page,
+              labels: selectedLabel === "all" ? undefined : selectedLabel,
+            },
+          },
+        );
+
+        setIssues(issuesRes.data);
+      } catch (err) {
+        console.log("Issue fetch error", err);
+      }
+
+      setLoading(false);
+    };
+
+    fetchFilteredIssues();
+  }, [repoInfo, stateFilter, selectedLabel, page]);
 
   return (
     <div className="app">
@@ -57,7 +104,7 @@ export default function GFIS() {
         <h1 className="title">GitHub Issues Tracker</h1>
       </div>
 
-      {/* SEARCH BAR */}
+      {/* SEARCH */}
       <div className="searchBox">
         <input
           type="text"
@@ -65,15 +112,16 @@ export default function GFIS() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button onClick={fetchIssues}>
+        <button onClick={fetchRepoData}>
           {loading ? "Loading..." : "Fetch Issues"}
         </button>
       </div>
 
-      {/* REPO HEADER */}
+      {/* REPO INFO */}
       {repoInfo && (
-        <div>
+        <>
           <h2>{repoInfo.full_name}</h2>
+
           <div className="profileCard sideProfile">
             <div className="profileInfo">
               <p>{repoInfo.description}</p>
@@ -84,13 +132,45 @@ export default function GFIS() {
               </div>
             </div>
           </div>
-        </div>
+
+          {/* FILTER BAR */}
+          <div className="filterBar">
+            <select
+              value={stateFilter}
+              onChange={(e) => {
+                setStateFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+
+            <select
+              value={selectedLabel}
+              onChange={(e) => {
+                setSelectedLabel(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">All Labels</option>
+
+              {labels.map((label) => (
+                <option key={label.id} value={label.name}>
+                  {label.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
       )}
 
-      {/* ISSUES LIST */}
+      {/* ISSUE LIST */}
       {issues.length > 0 && (
         <div>
-          <h3>Recent Issues</h3>
+          <h3>Issues</h3>
+
           <div className="card issueList">
             {issues.map((issue) => (
               <div key={issue.id} className="repoItem">
@@ -104,12 +184,16 @@ export default function GFIS() {
                       #{issue.number} {issue.title}
                     </a>
                   </h4>
+
                   <p>
-                    👤 {issue.user.login} | 💬 {issue.comments} comments
+                    👤 {issue.user.login} | 💬 {issue.comments}
                   </p>
 
-                  {/* Labels */}
-                  <div style={{ marginTop: "5px" }}>
+                  <div
+                    style={{
+                      marginTop: "5px",
+                    }}
+                  >
                     {issue.labels.map((label) => (
                       <span
                         key={label.id}
@@ -134,6 +218,24 @@ export default function GFIS() {
                 </div>
               </div>
             ))}
+          </div>
+          {/* PAGINATION */}
+          <div className="pagination">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              ⬅ Prev
+            </button>
+
+            <span>Page {page}</span>
+
+            <button
+              disabled={issues.length < 10}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              Next ➡
+            </button>
           </div>
         </div>
       )}
