@@ -8,7 +8,7 @@ export default function GFIS() {
   const [repoInfo, setRepoInfo] = useState(null);
   const [issues, setIssues] = useState([]);
   const [labels, setLabels] = useState([]);
-
+  const [repoParams, setRepoParams] = useState(null);
   const [stateFilter, setStateFilter] = useState("all");
   const [selectedLabel, setSelectedLabel] = useState("all");
   const [page, setPage] = useState(1);
@@ -29,9 +29,39 @@ export default function GFIS() {
     }
   };
 
+  const fetchAllLabels = async (owner, repo) => {
+    let allLabels = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const res = await axios.get(
+        `https://api.github.com/repos/${owner}/${repo}/labels`,
+        {
+          params: {
+            per_page: 100,
+            page: page,
+          },
+        },
+      );
+
+      allLabels = [...allLabels, ...res.data];
+
+      if (res.data.length < 100) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+
+    return allLabels;
+  };
+
   const fetchRepoData = async () => {
     const parsed = extractRepo(input);
     if (!parsed) return alert("Invalid repo link");
+
+    setRepoParams(parsed);
 
     setLoading(true);
 
@@ -40,19 +70,10 @@ export default function GFIS() {
         `https://api.github.com/repos/${parsed.owner}/${parsed.repo}`,
       );
 
-      const labelsRes = await axios.get(
-        `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/labels`,
-        {
-          params: {
-            per_page: 100,
-            page: 1,
-          },
-        },
-      );
+      const allLabels = await fetchAllLabels(parsed.owner, parsed.repo);
 
       setRepoInfo(repoRes.data);
-      setLabels(labelsRes.data);
-
+      setLabels(allLabels);
       setPage(1);
     } catch (err) {
       alert("Repo not found or API error");
@@ -62,17 +83,14 @@ export default function GFIS() {
   };
 
   useEffect(() => {
-    if (!repoInfo) return;
-
-    const parsed = extractRepo(input);
-    if (!parsed) return;
+    if (!repoParams) return;
 
     const fetchFilteredIssues = async () => {
       setLoading(true);
 
       try {
         const issuesRes = await axios.get(
-          `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/issues`,
+          `https://api.github.com/repos/${repoParams.owner}/${repoParams.repo}/issues`,
           {
             params: {
               state: stateFilter,
@@ -92,7 +110,7 @@ export default function GFIS() {
     };
 
     fetchFilteredIssues();
-  }, [repoInfo, stateFilter, selectedLabel, page]);
+  }, [repoParams, stateFilter, selectedLabel, page]);
 
   return (
     <div className="app">
